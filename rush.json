@@ -1,0 +1,15 @@
+{
+  "rushVersion": "5.129.1",
+  "pnpmVersion": "9.4.0",
+  "nodeSupportedVersionRange": "20.11.0",
+  "projects": [
+    {
+      "packageName": "big-file-upload-front",
+      "projectFolder": "packages/big-file-upload-front"
+    },
+    {
+      "packageName": "big-file-upload-service",
+      "projectFolder": "packages/big-file-upload-service"
+    }
+  ]
+}
