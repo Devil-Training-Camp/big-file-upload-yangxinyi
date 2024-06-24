@@ -1,10 +1,10 @@
-<script setup lang="ts">
-import homePage from './components/homePage.vue'
-</script>
-
 <template>
-  <homePage></homePage>
+  <homepage/>
 </template>
+
+<script setup lang="ts">
+import homepage from './components/homepage.vue'
+</script>
 
 <style scoped>
 .logo {
