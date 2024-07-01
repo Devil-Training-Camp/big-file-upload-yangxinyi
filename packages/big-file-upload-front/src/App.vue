@@ -1,9 +1,17 @@
 <template>
-  <homepage/>
+  <homePage/>
+  <a-button @click="foo"></a-button>
 </template>
 
 <script setup lang="ts">
-import homepage from './components/homepage.vue'
+import axios from 'axios';
+import homePage from './components/homePage.vue'
+const foo = () => {
+  console.log('foo')
+  axios.get('http://localhost:3000/api/getData').then(res => {
+    console.log(res)
+  })
+}
 </script>
 
 <style scoped>
