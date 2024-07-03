@@ -8,7 +8,7 @@ import axios from 'axios';
 import homePage from './components/homePage.vue'
 const foo = () => {
   console.log('foo')
-  axios.get('http://localhost:3000/api/getData').then(res => {
+  axios.get('api/getData').then(res => {
     console.log(res)
   })
 }
