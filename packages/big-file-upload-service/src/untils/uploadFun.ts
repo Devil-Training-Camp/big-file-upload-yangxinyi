@@ -1,5 +1,10 @@
+import {
+	FileChunk
+} from '../interface/index'
+const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
+let fileList:any[] = [];
 const storage = multer.diskStorage({
 	destination: function (req:any, file:any, cb:any) {
 		cb(null, path.resolve(__dirname, "../../public/upload"));
@@ -14,7 +19,7 @@ const storage = multer.diskStorage({
 	},
 });
 
-const upload = multer({
+export const upload = multer({
 	storage,
 	limits: {
 		fileSize: 1024 * 1024 * 1024, //1GB
@@ -30,4 +35,26 @@ const upload = multer({
 		}
 	},
 });
-export default upload;
+export const mergeChunk = (fileName:string) => {
+	const uploadUrl = path.resolve(__dirname, "../../public/upload")
+	const filePath = path.join(uploadUrl,fileName);
+	if (!fs.existsSync(filePath)) {
+		fs.mkdirSync(filePath);
+	}
+	const writeStream = fs.createWriteStream(path.join(filePath,fileName),{ flags: 'a' })
+	fileList.forEach(item=>{
+		// 写文件流的对象
+		const chunkPath = path.join(uploadUrl,item.filename)
+		const data = fs.readFileSync(chunkPath);
+		writeStream.write(data);
+		fs.unlinkSync(chunkPath);
+	})
+	writeStream.end()
+	writeStream.on('finish',()=>{
+		console.log('写入完成');
+	});
+};
+
+export const getChunkList = (fileItem:any)=>{
+	fileList.push(fileItem)
+}
