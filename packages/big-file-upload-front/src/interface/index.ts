@@ -1,4 +1,8 @@
 export interface FileChunk {
-    chunk:Blob;
+    chunk:Blob
     id:number
+}
+export interface FileInfo {
+    name:string
+    hash:string
 }

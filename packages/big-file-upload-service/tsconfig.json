@@ -7,6 +7,6 @@
         "skipLibCheck": true /* 跳过声明文件的类型检查 */,
         "forceConsistentCasingInFileNames": true /* 禁止对同一个文件的不一致的引用 */
     },
-    "include": ["src/**/*"] /* 指定需要编译的目录范围 */,
+    "include": ["src/**/*","src/**/*.ts"] /* 指定需要编译的目录范围 */,
     "exclude": ["node_modules"] /* 忽略类型检查的目录 */
 }

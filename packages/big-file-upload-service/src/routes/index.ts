@@ -1,6 +1,7 @@
 // 导入 Express 框架，用于创建和管理 HTTP 服务器和路由。
 import express from "express";
-import {upload,mergeChunk,getChunkList} from "../untils/uploadFun";
+import { upload,mergeChunk,getChunkList } from "../untils/uploadFun";
+import { calculateHash } from "../untils/hash";
 // 创建一个 Express 路由器实例，它是一个中间件和路由的集合，可以用于路由特定的请求。
 const router = express.Router();
 
@@ -24,13 +25,30 @@ router.post("/api/upload", upload.single("file"), (req:any, res:any) => {
 });
 router.post("/api/merge", express.json(),(req:any, res:any) => {
 	mergeChunk(req.body.fileName)
-	const url = `/upload/${req.body.fileName}`;
+	const url = `/upload/${req.body.fileName}/${req.body.fileName}`;
 	res.send({
 		code: 0,
-		msg: "",
+		msg: "上传成功",
 		data: url,
 	});
 });
+router.get("/api/isExist", express.json(),async (req:any, res:any) => {
+	let hash = await calculateHash(req.query.name)
+	// puzzle 前后端算出来的hash值不一致，前端用的spark-md5，后端用的crypto 算法用的md5参数
+	if(hash == req.query.hash){
+		res.send({
+			code: 0,
+			msg: req.query.name + "已经存在",
+			isExist: true,
+		});
+	} else {
+		res.send({
+			code: 0,
+			msg: req.query.name + "不存在",
+			isExist: false,
+		});
+	}
+})
 export default router;
 // 如果用下面这种方式导出，则需要用 require 引入
 // module.exports  = router;
