@@ -14,10 +14,16 @@ importers:
       axios:
         specifier: ^1.7.2
         version: 1.7.2
+      spark-md5:
+        specifier: ^3.0.2
+        version: 3.0.2
       vue:
         specifier: ^3.4.29
         version: 3.4.30(typescript@5.5.2)
     devDependencies:
+      '@types/spark-md5':
+        specifier: ^3.0.4
+        version: 3.0.4
       '@vitejs/plugin-vue':
         specifier: ^5.0.5
         version: 5.0.5(vite@5.3.1(@types/node@20.14.8))(vue@3.4.30(typescript@5.5.2))
@@ -33,16 +39,22 @@ importers:
 
   packages/big-file-upload-service:
     dependencies:
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.21
       cors:
         specifier: ^2.8.5
         version: 2.8.5
       multer:
         specifier: 1.4.5-lts.1
         version: 1.4.5-lts.1
+      spark-md5:
+        specifier: ^3.0.2
+        version: 3.0.2
     devDependencies:
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.21
+      '@types/spark-md5':
+        specifier: ^3.0.4
+        version: 3.0.4
       express:
         specifier: ^4.19.2
         version: 4.19.2
@@ -391,6 +403,9 @@ packages:
 
   '@types/serve-static@1.15.7':
     resolution: {integrity: sha512-W8Ym+h8nhuRwaKPaDw34QUkwsGi6Rc4yYqvKFo5rm2FUEhCFbzVWrxXUxuKK8TASjWsysJY0nsmNCGhCOIsrOw==}
+
+  '@types/spark-md5@3.0.4':
+    resolution: {integrity: sha512-qtOaDz+IXiNndPgYb6t1YoutnGvFRtWSNzpVjkAPCfB2UzTyybuD4Tjgs7VgRawum3JnJNRwNQd4N//SvrHg1Q==}
 
   '@vitejs/plugin-vue@5.0.5':
     resolution: {integrity: sha512-LOjm7XeIimLBZyzinBQ6OSm3UBCNVCpLkxGC0oWmm2YPzVZoxMsdvNVimLTBzpAnR9hl/yn1SHGuRfe6/Td9rQ==}
@@ -993,6 +1008,9 @@ packages:
     resolution: {integrity: sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==}
     engines: {node: '>=0.10.0'}
 
+  spark-md5@3.0.2:
+    resolution: {integrity: sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==}
+
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
@@ -1374,6 +1392,8 @@ snapshots:
       '@types/http-errors': 2.0.4
       '@types/node': 20.14.8
       '@types/send': 0.17.4
+
+  '@types/spark-md5@3.0.4': {}
 
   '@vitejs/plugin-vue@5.0.5(vite@5.3.1(@types/node@20.14.8))(vue@3.4.30(typescript@5.5.2))':
     dependencies:
@@ -2069,6 +2089,8 @@ snapshots:
       semver: 7.6.2
 
   source-map-js@1.2.0: {}
+
+  spark-md5@3.0.2: {}
 
   statuses@2.0.1: {}
 

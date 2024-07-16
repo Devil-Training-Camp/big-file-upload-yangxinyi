@@ -29,25 +29,12 @@ export const createHash = (chunkList: Blob[]) : Promise<string> => {
 		// puzzle 这里只能用绝对路径，相对路径会报错，不知道是为什么???先换种写法
 		// let hashWorker = new Worker('../../src/untils/worker.ts'); 
 		let hashWorker = new webWorker(); 
-		chunkList.forEach((item,index) => {
-			// 将分片发送给worker子线程
-			// 如果是发送最后一个分片，需要给终止提示
-			if( index == chunkList.length - 1){
-				hashWorker.postMessage({
-					hasDone:true,
-					blob:item,
-				}); 
-			} else {
-				hashWorker.postMessage({blob:item}); 
-			}
-			
-			hashWorker.onmessage = (e) => {
-				// 返回子线程计算的最终hash，并关闭子线程
-				resolve(e.data as string);
-				hashWorker.terminate()
-			};
-		});
-		
+		hashWorker.postMessage(chunkList); 
+		hashWorker.onmessage = (e) => {
+			// 返回子线程计算的最终hash，并关闭子线程
+			resolve(e.data as string);
+			hashWorker.terminate()
+		};
 	});
 };
 

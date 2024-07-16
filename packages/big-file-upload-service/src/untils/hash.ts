@@ -8,6 +8,7 @@ export const calculateHash = (fileName:string) => {
         const filePath = path.join(uploadUrl,fileName);
         if (!fs.existsSync(filePath)) {
             resolve('');
+            return
         }
         const algorithm = 'md5'; // 选择哈希算法
         const localHash = crypto.createHash(algorithm);

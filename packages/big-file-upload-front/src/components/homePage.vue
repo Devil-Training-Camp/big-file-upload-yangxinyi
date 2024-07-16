@@ -34,9 +34,9 @@ const handleUpload = async () => {
 		name:file.value.name,
 		hash:fileHash.value,
 	})
-	debugger
 	if(res.data.isExist){
 		message.success('文件已经从存在');
+		return
 	}
 	for(let i = 0; i < chunkList.value.length; i++){
 		let item = chunkList.value[i];
