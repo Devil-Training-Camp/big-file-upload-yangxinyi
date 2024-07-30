@@ -41,3 +41,38 @@ export const createHash = (chunkList: Blob[]) : Promise<string> => {
 export const isFileExist = (fileInfo:FileInfo) => {
 	return axios.get("api/isExist?name="+fileInfo.name+"&hash="+fileInfo.hash);
 };
+
+// 参数说明：
+// poolLimit（数字类型）：表示限制的并发数；
+// array（数组类型）：表示任务数组；
+// iteratorFn（函数类型）：表示迭代函数，用于实现对每个任务项进行处理，该函数会返回一个 Promise 对象或异步函数；
+// onUpload: 进度条
+export const promisePool = async(poolLimit:number, array:any[], iteratorFn:Function) => {
+	// 所有异步任务的数组
+	let allPromiseArray:Promise<any>[] = [];
+	// 正在执行中的异步任务数组
+	let poolArray:Promise<any>[] = [];
+	for(let item of array){
+		// 创建一个异步任务执行iteratorFn函数
+		let promise = Promise.resolve().then(() => iteratorFn(item));
+		// 将新创建的promise添加到allPromiseArray数组中
+		allPromiseArray.push(promise);
+		if(array.length >= poolLimit){
+			// 当需要执行的异步任务数量大于并发限制时
+			// 在promise执行后，将其从poolArray中移除
+			// 将移除的这个环节添加在promise后，并加入到poolArray中
+			let promiseKeepOn:Promise<any> = promise.then(() => {
+				poolArray.splice(poolArray.indexOf(promiseKeepOn), 1)
+			}
+				
+		);
+			poolArray.push(promiseKeepOn)
+			// 当正在执行的异步任务数组数量到达并发限制时开始执行
+			// 使用race方法，执行poolArray中执行的最快的一个
+			if(poolArray.length >= poolLimit){
+				await Promise.race(poolArray);
+			}
+		}
+	}
+	return Promise.all(allPromiseArray);  // 集合多个返回结果
+}

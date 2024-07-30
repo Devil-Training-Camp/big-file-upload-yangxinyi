@@ -9,11 +9,6 @@ router.post("/api/getData", function (req, res, next) {
 	res.send({ message: "Hello World!" });
 });
 
-// router.post("/", function (req, res) {
-// 	res.send("POST request to the homepage");
-// });
-
-
 // 前端上传接口给的参数formdata给的属性名是file，属性值是上传的文件对象，所以这里上传文件的属性是file
 router.post("/api/upload", upload.single("file"), (req:any, res:any) => {
 	getChunkList(req.file)
@@ -34,7 +29,6 @@ router.post("/api/merge", express.json(),(req:any, res:any) => {
 });
 router.get("/api/isExist", express.json(),async (req:any, res:any) => {
 	let hash = await calculateHash(req.query.name)
-	// puzzle 前后端算出来的hash值不一致，前端用的spark-md5，后端用的crypto 算法用的md5参数
 	if(hash == req.query.hash){
 		res.send({
 			code: 0,

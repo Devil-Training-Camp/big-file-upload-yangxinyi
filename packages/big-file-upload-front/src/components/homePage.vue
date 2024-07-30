@@ -10,7 +10,7 @@ import { ref } from "vue";
 import axios from "axios";
 import { message } from 'ant-design-vue';
 import  { FileChunk }  from '../interface/index'
-import { handleFragmentation,createHash,isFileExist } from "../untils/file";
+import { handleFragmentation,createHash,isFileExist,promisePool } from "../untils/file";
 
 const file = ref<File|null>(null);
 // 分片大小：10MB
@@ -23,7 +23,6 @@ const handleFileChange = (e:any) => {
 };
 const handleUpload = async () => {
 	if(!file.value) return;
-	let isSuccess = true;
 	// 将文件分片
 	chunkList.value = handleFragmentation(file.value,chunkSize);
 	let chunkListArr:Blob[] = chunkList.value.map(item => item.chunk);
@@ -38,30 +37,24 @@ const handleUpload = async () => {
 		message.success('文件已经从存在');
 		return
 	}
-	for(let i = 0; i < chunkList.value.length; i++){
-		let item = chunkList.value[i];
-		let formData = new FormData();
-		formData.append("file", item.chunk);
-		formData.append("fileId", item.id.toString());
-		formData.append("fileName", file.value!.name);
-		try {
-			const response = await axios.post(
-				"api/upload",
-				formData
-			);
-			console.log(response)
-			// onSuccess(response.data);
-		} catch (error) {
-			// onError(error);
-			console.log(item.id)
-			isSuccess = false
-			break
-		}
-	}
-	if(isSuccess){
-		// 所有分片上传完之后，合并文件
+	promisePool(5,chunkList.value,uploadChunk).then(()=>{
 		mergeChunk()
-	}
+	})
+};
+const uploadChunk = (item:FileChunk) => {
+	let formData = new FormData();
+	formData.append("file", item.chunk);
+	formData.append("fileId", item.id.toString());
+	formData.append("fileName", file.value!.name);
+	return new Promise((resolve,reject) => {
+		axios.post(
+			"api/upload",
+			formData
+		).then(res=>{
+			resolve(res)
+		})
+		
+	})
 };
 const mergeChunk = async () => {
 	let obj = {
