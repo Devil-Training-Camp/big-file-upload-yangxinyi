@@ -46,7 +46,7 @@ const uploadChunk = (item:FileChunk) => {
 	formData.append("file", item.chunk);
 	formData.append("fileId", item.id.toString());
 	formData.append("fileName", file.value!.name);
-	return new Promise((resolve,reject) => {
+	return new Promise((resolve) => {
 		axios.post(
 			"api/upload",
 			formData
@@ -60,8 +60,8 @@ const mergeChunk = async () => {
 	let obj = {
 		fileName:file.value!.name 
 	}
-	const response = await axios.post("api/merge",obj);
-	console.log(response)
+	await axios.post("api/merge",obj);
+	message.success('上传成功')
 };
 </script>
 
