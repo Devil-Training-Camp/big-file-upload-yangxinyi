@@ -12,6 +12,7 @@ const createError = require("http-errors");
 // app.use(cors);
 // 将与用户相关的 URL (/users) 的请求路由到 usersRouter。
 app.use("/", router);
+
 // 如果前面的路由都没有处理请求，则创建一个 404 错误并传递给错误处理器。
 app.use(function (req, res, next) {
 	next(createError(404));
@@ -20,3 +21,6 @@ app.use(function (req, res, next) {
 app.listen(port, () => {
 	console.log(`Example app listening on port ${port}`);
 });
+
+
+// 整体看起来过度简单，建议重做。。。

@@ -13,6 +13,7 @@ export const calculateHash = (fileName:string) => {
         const algorithm = 'md5'; // 选择哈希算法
         const localHash = crypto.createHash(algorithm);
         const fileStream = fs.createReadStream(path.join(filePath,fileName));
+        // stream 好评
         fileStream.on("data", (data:Buffer|string) => {
             localHash.update(data);
         });
