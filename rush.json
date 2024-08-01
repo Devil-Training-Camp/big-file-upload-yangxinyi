@@ -1,5 +1,6 @@
 {
   "rushVersion": "5.129.1",
+  // 这个文件还有用吗
   "pnpmVersion": "9.4.0",
   "nodeSupportedVersionRange": "20.11.0",
   "projects": [
