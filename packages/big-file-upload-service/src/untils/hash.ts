@@ -1,7 +1,7 @@
-const fs = require("fs");
-const crypto = require("crypto");
-const path = require("path");
 
+import fs from 'fs'
+import path from 'path'
+import crypto from 'crypto'
 export const calculateHash = (fileName:string) => {
     return new Promise((resolve, reject) => {
         const uploadUrl = path.resolve(__dirname, "../../public/upload")

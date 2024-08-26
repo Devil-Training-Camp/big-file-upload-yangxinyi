@@ -1,9 +1,9 @@
 import {
 	FileChunk
 } from '../interface/index'
-const fs = require("fs");
-const multer = require("multer");
-const path = require("path");
+import fs from 'fs'
+import multer from 'multer'
+import path from 'path'
 let fileList:any[] = [];
 const storage = multer.diskStorage({
 	destination: function (req:any, file:any, cb:any) {
