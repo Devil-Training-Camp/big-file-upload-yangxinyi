@@ -1,6 +1,7 @@
 import {
 	FileChunk
 } from '../interface/index'
+import { checkFileHash } from "../untils/hash";
 import fs from 'fs'
 import multer from 'multer'
 import path from 'path'
@@ -57,4 +58,19 @@ export const mergeChunk = (fileName:string) => {
 
 export const getChunkList = (fileItem:any)=>{
 	fileList.push(fileItem)
+}
+
+export const isExist = async (req:any, res:any)=>{
+	const isFileExist = await checkFileHash(req.query.hash)
+	if(isFileExist.isExist){
+		res.send({
+			msg: isFileExist.fileName,
+			isExist: true,
+		});
+	}else{
+		res.send({
+			msg: "文件不存在",
+			isExist: false,
+		});
+	}
 }

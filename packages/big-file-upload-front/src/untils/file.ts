@@ -39,7 +39,7 @@ export const createHash = (chunkList: Blob[]) : Promise<string> => {
 };
 
 export const isFileExist = (fileInfo:FileInfo) => {
-	return axios.get("api/isExist?name="+fileInfo.name+"&hash="+fileInfo.hash);
+	return axios.get("api/isExist?hash="+fileInfo.hash);
 };
 
 // 参数说明：

@@ -1,7 +1,7 @@
 // 导入 Express 框架，用于创建和管理 HTTP 服务器和路由。
 import express from "express";
-import { upload,mergeChunk,getChunkList } from "../untils/uploadFun";
-import { calculateHash } from "../untils/hash";
+import { upload,mergeChunk,getChunkList,isExist } from "../untils/uploadFun";
+
 // 创建一个 Express 路由器实例，它是一个中间件和路由的集合，可以用于路由特定的请求。
 const router = express.Router();
 
@@ -27,22 +27,7 @@ router.post("/api/merge", express.json(),(req:any, res:any) => {
 		data: url,
 	});
 });
-router.get("/api/isExist", express.json(),async (req:any, res:any) => {
-	let hash = await calculateHash(req.query.name)
-	if(hash == req.query.hash){
-		res.send({
-			code: 0,
-			msg: req.query.name + "已经存在",
-			isExist: true,
-		});
-	} else {
-		res.send({
-			code: 0,
-			msg: req.query.name + "不存在",
-			isExist: false,
-		});
-	}
-})
+router.get("/api/isExist", express.json(), isExist)
 export default router;
 // 如果用下面这种方式导出，则需要用 require 引入
 // module.exports  = router;

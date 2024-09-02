@@ -3,6 +3,6 @@ export interface FileChunk {
     id:number
 }
 export interface FileInfo {
-    name:string
     hash:string
+    name?:string
 }
