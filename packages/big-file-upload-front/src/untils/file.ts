@@ -1,5 +1,5 @@
 import axios from "axios";
-import { FileChunk,FileInfo } from "../interface/index";
+import { FileChunk,FileInfo,FileNameObj } from "../interface/index";
 import webWorker from './worker.ts?worker'
 // 文件分片上传
 // 1. 获取文件大小，计算一共需要分成多少个分片
@@ -8,7 +8,7 @@ export const handleFragmentation = (file: File, chunkSize: number) => {
 	let chunkList: FileChunk[] = [];
 	let shardsNum = Math.ceil(file.size / chunkSize);
 	// file.slice(a，b) a是起始位置，b是结束位置
-	for (let i = 0; i < shardsNum + 1; i++) {
+	for (let i = 0; i < shardsNum ; i++) {
 		let tempFile: Blob;
 		if (i == shardsNum) {
 			tempFile = file.slice(i * chunkSize, file.size);
@@ -41,7 +41,12 @@ export const createHash = (chunkList: Blob[]) : Promise<string> => {
 export const isFileExist = (fileInfo:FileInfo) => {
 	return axios.get("api/isExist?hash="+fileInfo.hash);
 };
-
+export const changeFileName = (fileNameObj:FileNameObj) => {
+	// 这里本应该直接使用fileNameObj的，但是不知道为什么会有标红报错，就先用Object.entries将key和value变成数组作为参数 
+	const arr = Object.entries(fileNameObj)
+	const params = new URLSearchParams(arr).toString();
+	return axios.get(`api/changeName?${params}`);
+};
 // 参数说明：
 // poolLimit（数字类型）：表示限制的并发数；
 // array（数组类型）：表示任务数组；
