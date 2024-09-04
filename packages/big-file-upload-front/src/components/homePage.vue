@@ -9,7 +9,7 @@
 import { ref } from "vue";
 import axios from "axios";
 import { message, Modal } from "ant-design-vue";
-import { FileChunk,FileChunkData } from "../interface/index";
+import { FileChunk } from "../interface/index";
 import {
     handleFragmentation,
     createHash,
@@ -24,7 +24,8 @@ const file = ref<File | null>(null);
 const chunkSize = 10 * 1024 * 1024;
 const chunkList = ref<FileChunk[]>([]);
 const fileHash = ref<string>("");
-
+const db = ref<IDBDatabase | null>(null);
+const dbVersion = ref<number>(0)
 const handleFileChange = (e: any) => {
     file.value = e.target.files[0];
 };
@@ -72,9 +73,10 @@ const handleUpload = async () => {
     });
 };
 const saveIndexedDB = async () => {
-    let db:IDBDatabase = await indexedDBFun.openDB('bigFileUpload',fileHash.value)
+    db.value = await indexedDBFun.openDB('bigFileUpload',fileHash.value)
+    dbVersion.value = db.value.version
     chunkList.value.forEach(item => {
-        indexedDBFun.addData(db,fileHash.value,item.chunk)
+        indexedDBFun.addData(db.value as IDBDatabase,fileHash.value,item.chunk)
     })
 }
 const uploadChunk = (item: FileChunk) => {
@@ -98,7 +100,10 @@ const mergeChunk = async (total: number) => {
     let res:any = await axios.post("api/merge", obj);
     if(res.data.isMerge){
         message.success("上传成功");
-        await indexedDBFun.openDB('bigFileUpload',fileHash.value,true)
+        if(db.value){
+            db.value.close()
+            await indexedDBFun.openDB('bigFileUpload',fileHash.value,dbVersion.value+1)
+        }
     }
 };
 </script>

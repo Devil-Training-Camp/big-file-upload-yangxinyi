@@ -13,10 +13,11 @@ declare global {
  * 打开数据库
  * @param {object} dbName 数据库的名字
  * @param {string} storeName 仓库名称
- * @param {string} version 数据库的版本
+ * @param {boolean} isClean 是否为清除仓库
+ * @param {number} version 数据库的版本
  * @return {object} 该函数会返回一个数据库实例
  */
-function openDB(dbName: string,storeName:string,isClean:boolean=false): Promise<IDBDatabase> {
+function openDB(dbName: string,storeName:string,version?:number): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         let indexedDB: IDBFactory | null = null;
         //  兼容浏览器
@@ -30,29 +31,27 @@ function openDB(dbName: string,storeName:string,isClean:boolean=false): Promise<
             return reject("not in browser");
         }
         let db: IDBDatabase;
-        // 打开数据库，若没有则会创建(此时不知道版本号)
-        const request = indexedDB.open(dbName);
+        // 打开数据库，若没有则会创建
+        let request:any
+        if(version){
+            // (此时不知道版本号)清除操作知道版本号
+            request = indexedDB.open(dbName,version);
+        }else{
+            // (此时不知道版本号)
+            request = indexedDB.open(dbName);
+        }
         // 数据库打开成功回调
-        request.onsuccess = function (event) {
+        request.onsuccess = function (event:any) {
             db = (event.target as any).result; // 数据库对象
             console.log("数据库打开成功");
-            
-            if (!db.objectStoreNames.contains(storeName)) {
-                indexedDB.open(dbName,db.version+1)
-                // createObjectStore(db,storeName)
-            }else{
-                resolve(db);
-            }
-            if (isClean){
-                indexedDB.open(dbName,db.version+1)
-            }
+            resolve(db);
         };
         // 数据库打开失败的回调
-        request.onerror = function (event) {
+        request.onerror = function (event:any) {
             console.log("数据库打开报错");
         };
         // 数据库有更新时候的回调
-        request.onupgradeneeded = function (event) {
+        request.onupgradeneeded = function (event:any) {
             // 数据库创建或升级的时候会触发
             console.log("onupgradeneeded");
             db = (event.target as any).result; // 数据库对象
