@@ -45,7 +45,7 @@ export const changeFileName = (fileNameObj:FileNameObj) => {
 	// 这里本应该直接使用fileNameObj的，但是不知道为什么会有标红报错，就先用Object.entries将key和value变成数组作为参数 
 	const arr = Object.entries(fileNameObj)
 	const params = new URLSearchParams(arr).toString();
-	return axios.get(`api/changeName?${params}`);
+	return axios.get(`api/changeFileName?${params}`);
 };
 // 参数说明：
 // poolLimit（数字类型）：表示限制的并发数；

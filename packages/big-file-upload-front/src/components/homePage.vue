@@ -42,16 +42,16 @@ const handleUpload = async () => {
         hash: fileHash.value,
     });
     if (res.data.isExist) {
-        if (res.data.fileName == file.value.name) {
+        if (res.data.msg == file.value.name) {
             message.success("文件已经存在");
         } else {
             Modal.confirm({
                 title: 	`是否替换`,
-                content: `该文件已经存在，文件名为${res.data.fileName}，确定更新为上传文件名?`,
+                content: `该文件已经存在，文件名为${res.data.msg}，确定更新为上传文件名?`,
                 onOk() {
                     let obj = {
                         newName: file.value!.name,
-                        oldName: res.data.fileName
+                        oldName: res.data.msg
                     }
                     changeFileName(obj).then((res: any)=>{
                         if(res.data.isChange){
