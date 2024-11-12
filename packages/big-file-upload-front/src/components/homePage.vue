@@ -1,15 +1,18 @@
 <template>
-    <input type="file" @change="handleFileChange" name="userImage" />
-    <a-button @click="handleUpload">
-        <upload-outlined></upload-outlined>
-        Click to Upload
-    </a-button>
+    <a-spin :spinning="spinning" tip="正在检查文件是否存在……">
+        <input type="file" @change="handleFileChange" name="userImage" />
+        <a-progress :percent="progressPercent" />
+        <a-button @click="handleUpload">
+            <upload-outlined></upload-outlined>
+            Click to Upload
+        </a-button>
+    </a-spin>
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios";
 import { message, Modal } from "ant-design-vue";
-import { FileChunk } from "../interface/index";
+import { FileChunk , chunkIndexdDB } from "../interface/index";
 import {
     handleFragmentation,
     createHash,
@@ -26,13 +29,26 @@ const chunkList = ref<FileChunk[]>([]);
 const fileHash = ref<string>("");
 const db = ref<IDBDatabase | null>(null);
 const dbVersion = ref<number>(0)
+const progressPercent = ref<number>(0);
+const spinning = ref<boolean>(false)
 const handleFileChange = (e: any) => {
     file.value = e.target.files[0];
+    spinning.value = false
+    progressPercent.value = 0
 };
 const handleUpload = async () => {
     if (!file.value) return;
-    // 将文件分片
-    chunkList.value = handleFragmentation(file.value, chunkSize);
+    spinning.value = true
+    if(file.value.size > chunkSize){
+        // 将文件分片
+        chunkList.value = handleFragmentation(file.value, chunkSize);
+    }else{
+        chunkList.value = [{
+            chunk:file.value,
+            id:0
+        }]
+    }
+    
     let chunkListArr: Blob[] = chunkList.value.map((item) => item.chunk);
     console.log(chunkListArr)
     // 计算文件hash
@@ -41,6 +57,7 @@ const handleUpload = async () => {
     let res = await isFileExist({
         hash: fileHash.value,
     });
+    spinning.value = false
     if (res.data.isExist) {
         if (res.data.msg == file.value.name) {
             message.success("文件已经存在");
@@ -66,18 +83,39 @@ const handleUpload = async () => {
         }
         return
     }
-    // 先将分片全部保存在indexedDB中
-    saveIndexedDB()
+     // 先将分片全部保存在indexedDB中
+    if(chunkList.value.length > 1) await saveIndexedDB()
+    
     promisePool(5, chunkList.value, uploadChunk).then(() => {
         mergeChunk(chunkList.value.length);
     });
 };
 const saveIndexedDB = async () => {
-    db.value = await indexedDBFun.openDB('bigFileUpload',fileHash.value)
-    dbVersion.value = db.value.version
-    chunkList.value.forEach(item => {
-        indexedDBFun.addData(db.value as IDBDatabase,fileHash.value,item.chunk)
+    return new Promise(async resolve => {
+        db.value = await indexedDBFun.openDB('bigFileUpload',fileHash.value)
+        dbVersion.value = db.value.version
+        let arr:chunkIndexdDB[] = chunkList.value.map(item => {
+            let obj:any = {...item}
+            obj.isUplaod = false
+            return obj as chunkIndexdDB
+        })
+        for(let i = 0; i < arr.length; i++){
+            await indexedDBFun.addData(db.value as IDBDatabase, fileHash.value, arr[i])
+        }
+        resolve(1)
     })
+    
+}
+const getProgress = async (db:IDBDatabase,storeName:string,chunk:any) => {
+    if(chunkList.value.length >1){
+        await indexedDBFun.updateStore(db,storeName,chunk)
+        let res:any = await indexedDBFun.getAllData(db,storeName)
+        let arr:chunkIndexdDB[] = res.filter((item:chunkIndexdDB) => item.isUplaod == true)
+        progressPercent.value = +(( arr.length/res.length * 100 ).toFixed(2))
+        console.log(res)
+    }else{
+        progressPercent.value = 100
+    }
 }
 const uploadChunk = (item: FileChunk) => {
     let formData = new FormData();
@@ -86,10 +124,17 @@ const uploadChunk = (item: FileChunk) => {
         fileId:item.id.toString(),
         fileName:file.value!.name
     }).toString();
-    return new Promise((resolve) => {
-        axios.post("api/upload?"+param, formData).then((res) => {
-            resolve(res);
-        });
+    return new Promise(async (resolve) => {
+        let res = await axios.post("api/upload?" + param, formData)
+        resolve(res);
+        let obj:chunkIndexdDB = {
+            chunk:item.chunk,
+            id:item.id,
+            isUplaod:true,
+            ID:item.id+1
+        }
+        getProgress(db.value as IDBDatabase,fileHash.value,obj)
+        console.log(res)
     });
 };
 const mergeChunk = async (total: number) => {

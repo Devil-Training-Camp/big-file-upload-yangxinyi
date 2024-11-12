@@ -1,11 +1,7 @@
-import {
-	FileChunk
-} from '../interface/index'
 import { checkFileHash } from "../untils/hash";
 import fs from 'fs'
 import multer from 'multer'
 import path from 'path'
-let fileList:any[] = [];
 const storage = multer.diskStorage({
 	destination: function (req:any, file:any, cb:any) {
 		cb(null, path.resolve(__dirname, "../../public/upload"));

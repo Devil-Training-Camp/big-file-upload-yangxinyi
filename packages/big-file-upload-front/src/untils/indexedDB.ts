@@ -13,11 +13,10 @@ declare global {
  * 打开数据库
  * @param {object} dbName 数据库的名字
  * @param {string} storeName 仓库名称
- * @param {boolean} isClean 是否为清除仓库
  * @param {number} version 数据库的版本
  * @return {object} 该函数会返回一个数据库实例
  */
-function openDB(dbName: string,storeName:string,version?:number): Promise<IDBDatabase> {
+function openDB(dbName: string, storeName: string, version?: number): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         let indexedDB: IDBFactory | null = null;
         //  兼容浏览器
@@ -32,33 +31,33 @@ function openDB(dbName: string,storeName:string,version?:number): Promise<IDBDat
         }
         let db: IDBDatabase;
         // 打开数据库，若没有则会创建
-        let request:any
-        if(version){
+        let request: any
+        if (version) {
             // (此时不知道版本号)清除操作知道版本号
-            request = indexedDB.open(dbName,version);
-        }else{
+            request = indexedDB.open(dbName, version);
+        } else {
             // (此时不知道版本号)
             request = indexedDB.open(dbName);
         }
         // 数据库打开成功回调
-        request.onsuccess = function (event:any) {
+        request.onsuccess = function (event: any) {
             db = (event.target as any).result; // 数据库对象
             console.log("数据库打开成功");
             resolve(db);
         };
         // 数据库打开失败的回调
-        request.onerror = function (event:any) {
+        request.onerror = function (event: any) {
             console.log("数据库打开报错");
         };
         // 数据库有更新时候的回调
-        request.onupgradeneeded = function (event:any) {
+        request.onupgradeneeded = function (event: any) {
             // 数据库创建或升级的时候会触发
             console.log("onupgradeneeded");
             db = (event.target as any).result; // 数据库对象
             if (!db.objectStoreNames.contains(storeName)) {
-                createObjectStore(db,storeName)
-            }else{
-                deleteStore(db,storeName)
+                createObjectStore(db, storeName)
+            } else {
+                deleteStore(db, storeName)
             }
         };
     });
@@ -93,19 +92,22 @@ function createObjectStore(db: IDBDatabase, storeName: string, dataIndex?: objec
  * @param {string} storeName 仓库名称
  * @param {string} data 数据
  */
-function addData(db: IDBDatabase , storeName: string, data: any) {
-    let request = db
-        .transaction([storeName], "readwrite") // 事务对象 指定表格名称和操作模式（"只读"或"读写"）
-        .objectStore(storeName) // 仓库对象
-        .add(data);
+function addData(db: IDBDatabase, storeName: string, data: any) {
+    return new Promise((resolve, reject) => {
+        let request = db
+            .transaction([storeName], "readwrite") // 事务对象 指定表格名称和操作模式（"只读"或"读写"）
+            .objectStore(storeName) // 仓库对象
+            .add(data);
+        request.onsuccess = function (event: Event) {
+            console.log("数据写入成功");
+            resolve(event)
+        };
 
-    request.onsuccess = function (event: Event) {
-        console.log("数据写入成功");
-    };
-
-    request.onerror = function (event: Event) {
-        console.log("数据写入失败");
-    };
+        request.onerror = function (event: Event) {
+            console.log("数据写入失败");
+            reject(event)
+        };
+    })
 }
 /**
  * 通过主键读取数据
@@ -129,7 +131,7 @@ function getDataByKey(db: IDBDatabase, storeName: string, key: number) {
         };
     });
 }
-function deleteStore(db: IDBDatabase, storeName: string):Promise<boolean> {
+function deleteStore(db: IDBDatabase, storeName: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
         if (db.objectStoreNames.contains(storeName)) {
             db.deleteObjectStore(storeName);
@@ -140,11 +142,41 @@ function deleteStore(db: IDBDatabase, storeName: string):Promise<boolean> {
     })
 }
 
+function updateStore(db: IDBDatabase, storeName: string, data: any) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(storeName, 'readwrite')
+        const objectStore = transaction.objectStore(storeName)
+        const request = objectStore.put(data)
+        request.onsuccess = function (event) {
+            console.log('数据更新成功');
+            resolve(event)
+        };
+
+        request.onerror = function (event) {
+            console.error('数据更新失败', event);
+            reject(event)
+        };
+    })
+
+}
+function getAllData(db: IDBDatabase, storeName: string) {
+    return new Promise((resolve, reject) => {
+        let res = db.transaction(storeName).objectStore(storeName).getAll()
+        res.onsuccess = function (e: any) {
+            resolve(e.target.result)
+        }
+        res.onerror = function (e: any) {
+            reject(e.target.result)
+        }
+    })
+}
 export default {
     openDB,
     createObjectStore,
     addData,
     getDataByKey,
-    deleteStore
+    getAllData,
+    deleteStore,
+    updateStore
 }
 

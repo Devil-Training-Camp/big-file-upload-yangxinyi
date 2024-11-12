@@ -14,3 +14,10 @@ export interface FileChunkData {
     id:number
     [key:string]:any
 }
+
+export interface chunkIndexdDB {
+    chunk:Blob
+    id:number
+    isUplaod:boolean
+    ID?:number
+}

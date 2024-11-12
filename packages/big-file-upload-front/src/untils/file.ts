@@ -1,6 +1,7 @@
 import axios from "axios";
 import { FileChunk,FileInfo,FileNameObj } from "../interface/index";
 import webWorker from './worker.ts?worker'
+import indexedDBFun from "./indexedDB";
 // 文件分片上传
 // 1. 获取文件大小，计算一共需要分成多少个分片
 // 2. 循环分片，上传
@@ -68,14 +69,14 @@ export const promisePool = async(poolLimit:number, array:any[], iteratorFn:Funct
 			// 将移除的这个环节添加在promise后，并加入到poolArray中
 			let promiseKeepOn:Promise<any> = promise.then(() => {
 				poolArray.splice(poolArray.indexOf(promiseKeepOn), 1)
-			}
-				
-		);
+			});
 			poolArray.push(promiseKeepOn)
 			// 当正在执行的异步任务数组数量到达并发限制时开始执行
 			// 使用race方法，执行poolArray中执行的最快的一个
 			if(poolArray.length >= poolLimit){
-				await Promise.race(poolArray);
+				let res = await Promise.race(poolArray);
+				debugger
+				// getProgress()
 			}
 		}
 	}
