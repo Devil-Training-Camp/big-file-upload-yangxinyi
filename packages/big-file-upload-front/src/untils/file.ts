@@ -75,7 +75,6 @@ export const promisePool = async(poolLimit:number, array:any[], iteratorFn:Funct
 			// 使用race方法，执行poolArray中执行的最快的一个
 			if(poolArray.length >= poolLimit){
 				let res = await Promise.race(poolArray);
-				debugger
 				// getProgress()
 			}
 		}

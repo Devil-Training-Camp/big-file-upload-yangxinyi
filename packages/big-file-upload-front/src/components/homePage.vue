@@ -1,7 +1,14 @@
 <template>
     <a-spin :spinning="spinning" tip="正在检查文件是否存在……">
-        <input type="file" @change="handleFileChange" name="userImage" />
-        <a-progress :percent="progressPercent" />
+        <div>
+            <input type="file" @change="handleFileChange" name="userImage" />
+            <div v-if="progressPercent>0&&progressPercent<100">
+                <a-button v-if="pauseShow" shape="circle" :icon="h(PauseCircleOutlined)" @click="pauseUpload"/>
+                <a-button v-else shape="circle" :icon="h(PlayCircleOutlined)" @click="continueUpload"/>
+                <a-button shape="circle" :icon="h(BorderOutlined)" @click="stopUpload"/>
+            </div>
+        </div>
+        <a-progress v-show="progressPercent !== 0" :percent="progressPercent" />
         <a-button @click="handleUpload">
             <upload-outlined></upload-outlined>
             Click to Upload
@@ -9,9 +16,10 @@
     </a-spin>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref,h } from "vue";
 import axios from "axios";
 import { message, Modal } from "ant-design-vue";
+import { PauseCircleOutlined,PlayCircleOutlined,BorderOutlined } from "@ant-design/icons-vue";
 import { FileChunk , chunkIndexdDB } from "../interface/index";
 import {
     handleFragmentation,
@@ -22,6 +30,7 @@ import {
 } from "../untils/file";
 import indexedDBFun from "../untils/indexedDB"
 
+let controller = new AbortController();
 const file = ref<File | null>(null);
 // 分片大小：10MB
 const chunkSize = 10 * 1024 * 1024;
@@ -31,6 +40,7 @@ const db = ref<IDBDatabase | null>(null);
 const dbVersion = ref<number>(0)
 const progressPercent = ref<number>(0);
 const spinning = ref<boolean>(false)
+const pauseShow = ref<boolean>(true)
 const handleFileChange = (e: any) => {
     file.value = e.target.files[0];
     spinning.value = false
@@ -85,7 +95,7 @@ const handleUpload = async () => {
     }
      // 先将分片全部保存在indexedDB中
     if(chunkList.value.length > 1) await saveIndexedDB()
-    
+    pauseShow.value = true
     promisePool(5, chunkList.value, uploadChunk).then(() => {
         mergeChunk(chunkList.value.length);
     });
@@ -93,6 +103,7 @@ const handleUpload = async () => {
 const saveIndexedDB = async () => {
     return new Promise(async resolve => {
         db.value = await indexedDBFun.openDB('bigFileUpload',fileHash.value)
+        debugger
         dbVersion.value = db.value.version
         let arr:chunkIndexdDB[] = chunkList.value.map(item => {
             let obj:any = {...item}
@@ -145,12 +156,22 @@ const mergeChunk = async (total: number) => {
     let res:any = await axios.post("api/merge", obj);
     if(res.data.isMerge){
         message.success("上传成功");
+        pauseShow.value = false
         if(db.value){
             db.value.close()
             await indexedDBFun.openDB('bigFileUpload',fileHash.value,dbVersion.value+1)
         }
     }
 };
+const pauseUpload = () => {
+    pauseShow.value = false
+}
+const continueUpload = () => {
+
+}
+const stopUpload = () => {
+
+}
 </script>
 
 <style scoped></style>

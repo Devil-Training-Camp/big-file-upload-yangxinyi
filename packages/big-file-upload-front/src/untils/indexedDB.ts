@@ -32,18 +32,30 @@ function openDB(dbName: string, storeName: string, version?: number): Promise<ID
         let db: IDBDatabase;
         // 打开数据库，若没有则会创建
         let request: any
-        if (version) {
-            // (此时不知道版本号)清除操作知道版本号
-            request = indexedDB.open(dbName, version);
-        } else {
-            // (此时不知道版本号)
-            request = indexedDB.open(dbName);
-        }
+        request = indexedDB.open(dbName);
+        // if (version) {
+        //     // (此时不知道版本号)清除操作知道版本号
+        //     request = indexedDB.open(dbName, version);
+        // } else {
+        //     // (此时不知道版本号)
+        //     request = indexedDB.open(dbName);
+        // }
         // 数据库打开成功回调
-        request.onsuccess = function (event: any) {
+        request.onsuccess = async function (event: any) {
             db = (event.target as any).result; // 数据库对象
             console.log("数据库打开成功");
+            let ver = db.version + 1
+            db.close()
+            db = await updateDB(dbName,storeName,ver) as IDBDatabase
             resolve(db);
+            // if (!db.objectStoreNames.contains(storeName)) {
+            //     let ver = db.version + 1
+            //     db.close()
+            //     db = await updateDB(dbName,storeName,ver) as IDBDatabase
+            //     resolve(db);
+            // }else{
+            // resolve(db);
+            // }
         };
         // 数据库打开失败的回调
         request.onerror = function (event: any) {
@@ -54,13 +66,38 @@ function openDB(dbName: string, storeName: string, version?: number): Promise<ID
             // 数据库创建或升级的时候会触发
             console.log("onupgradeneeded");
             db = (event.target as any).result; // 数据库对象
+            
+        };
+    });
+}/**
+ * [updateDB description]
+ *
+ * @param   {string}  dbName     [数据库的名字]
+ * @param   {string}  storeName  [仓库名称]
+ * @param   {number}  ver        [数据库的版本]
+ *
+ * @return  {[type]}             [return description]
+ */
+function updateDB(dbName:string,storeName:string,ver:number,){
+    return new Promise((resolve, reject) => {
+        let req = indexedDB.open(dbName,ver)
+        req.onsuccess = function (e: any) {
+            let db:IDBDatabase = (e.target as any).result; // 数据库对象
+            resolve(db);
+        }
+        req.onerror = function (e: any) {
+            console.log("数据库打开报错");
+        };
+        req.onupgradeneeded = function (e: any) {
+            let db:IDBDatabase = (e.target as any).result; // 数据库对象
             if (!db.objectStoreNames.contains(storeName)) {
                 createObjectStore(db, storeName)
             } else {
                 deleteStore(db, storeName)
             }
-        };
-    });
+            // createObjectStore(db, storeName)
+        }
+    })
 }
 /**
  * 创建一个对象存储空间（仓库）
@@ -131,6 +168,14 @@ function getDataByKey(db: IDBDatabase, storeName: string, key: number) {
         };
     });
 }
+/**
+ * [deleteStore description]
+ *
+ * @param   {IDBDatabase}       db         [数据库实例]
+ * @param   {string<boolean>}   storeName  [仓库名称]
+ *
+ * @return  {Promise<boolean>}             [return description]
+ */
 function deleteStore(db: IDBDatabase, storeName: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
         if (db.objectStoreNames.contains(storeName)) {
@@ -142,6 +187,15 @@ function deleteStore(db: IDBDatabase, storeName: string): Promise<boolean> {
     })
 }
 
+/**
+ * [updateStore description]
+ *
+ * @param   {IDBDatabase}  db         [数据库实例]
+ * @param   {string}       storeName  [仓库名称]
+ * @param   {any}          data       [data description]
+ *
+ * @return  {[type]}                  [return description]
+ */
 function updateStore(db: IDBDatabase, storeName: string, data: any) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(storeName, 'readwrite')
